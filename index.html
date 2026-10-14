@@ -1,62 +1,46 @@
-<meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Live Song Request</title>
   <style>
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 24px 16px;
-      background: #101114;
-      color: #ffffff;
+      margin: 0; padding: 24px 16px;
+      background: #101114; color: white;
       font-family: Arial, sans-serif;
     }
-    .container {
-      max-width: 440px;
-      margin: 0 auto;
-    }
+    .container { max-width: 440px; margin: auto; }
     .card {
-      background: #1c1d22;
-      padding: 22px;
-      border-radius: 18px;
-      border: 1px solid #34353c;
+      background: #1c1d22; padding: 22px;
+      border-radius: 18px; border: 1px solid #34353c;
     }
-    h1 { margin-top: 0; font-size: 27px; }
+    h1 { font-size: 27px; }
     p { color: #b9bac3; line-height: 1.5; }
-    label {
-      display: block;
-      margin: 18px 0 8px;
-      font-size: 14px;
-    }
+    label { display: block; margin: 18px 0 8px; }
     input, textarea, button {
-      width: 100%;
-      padding: 13px;
-      border-radius: 10px;
+      width: 100%; padding: 13px; border-radius: 10px;
       font-size: 16px;
     }
     input, textarea {
-      background: #111216;
-      border: 1px solid #444650;
+      background: #111216; border: 1px solid #444650;
       color: white;
     }
-    textarea { resize: vertical; }
     button {
-      margin-top: 20px;
-      border: 0;
-      background: #b6f36b;
-      color: #171a10;
-      font-weight: bold;
-      cursor: pointer;
+      margin-top: 20px; border: 0;
+      background: #b6f36b; color: #171a10;
+      font-weight: bold; cursor: pointer;
     }
-    .note { font-size: 12px; margin-top: 16px; }
+    button:disabled { opacity: .6; cursor: wait; }
     #result {
-      display: none;
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 10px;
-      background: #293820;
-      color: #e0ffc6;
-      line-height: 1.5;
+      display: none; margin-top: 16px; padding: 14px;
+      border-radius: 10px; line-height: 1.5;
+      overflow-wrap: anywhere;
     }
+    .success { background: #293820; color: #e0ffc6; }
+    .error { background: #482727; color: #ffdada; }
+    .note { font-size: 12px; }
   </style>
 </head>
 <body>
@@ -78,39 +62,74 @@
         <textarea id="message" maxlength="200" rows="3"
           placeholder="Semangat, Kak!"></textarea>
 
-        <button type="submit">Kirim Permintaan Lagu</button>
+        <button id="submitBtn" type="submit">
+          Kirim Permintaan Lagu
+        </button>
       </form>
 
-      <div id="result" role="status"></div>
+      <div id="result" role="status" aria-live="polite"></div>
       <p class="note">
-        Permintaan lagu belum otomatis masuk ke dashboard.
-        Pembayaran QRIS belum diaktifkan pada versi uji coba ini.
+        Versi uji coba. Pembayaran QRIS belum diaktifkan.
       </p>
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    document.getElementById("requestForm").addEventListener(
-      "submit", function(event) {
-        event.preventDefault();
+    const SUPABASE_URL = "GANTI_DENGAN_PROJECT_URL";
+    const SUPABASE_KEY = "GANTI_DENGAN_PUBLISHABLE_KEY";
 
-        const nickname = document.getElementById("nickname").value.trim();
-        const song = document.getElementById("song").value.trim();
-        const message = document.getElementById("message").value.trim();
+    const client = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
 
-        if (!nickname || !song) return;
+    const form = document.getElementById("requestForm");
+    const button = document.getElementById("submitBtn");
+    const result = document.getElementById("result");
 
-        const result = document.getElementById("result");
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const nickname = document.getElementById("nickname").value.trim();
+      const song = document.getElementById("song").value.trim();
+      const message = document.getElementById("message").value.trim();
+
+      if (!nickname || !song) return;
+
+      button.disabled = true;
+      button.textContent = "Mengirim...";
+      result.style.display = "none";
+
+      try {
+        const { error } = await client
+          .from("song_requests")
+          .insert({
+            nickname: nickname,
+            song_title: song,
+            message: message
+          });
+
+        if (error) throw error;
+
+        result.className = "success";
         result.textContent =
           "Terima kasih, " + nickname +
-          "! Permintaan lagu \"" + song +
-          "\" berhasil diuji di halaman ini." +
-          (message ? " Pesanmu: " + message : "") +
-          " Data belum tersimpan ke server.";
-
+          "! Permintaan lagu berhasil disimpan.";
         result.style.display = "block";
+        form.reset();
+      } catch (error) {
+        console.error("Gagal menyimpan permintaan:", error);
+        result.className = "error";
+        result.textContent =
+          "Permintaan belum berhasil disimpan. " +
+          "Periksa koneksi atau pengaturan database, lalu coba lagi.";
+        result.style.display = "block";
+      } finally {
+        button.disabled = false;
+        button.textContent = "Kirim Permintaan Lagu";
       }
-    );
+    });
   </script>
 </body>
 </html>
