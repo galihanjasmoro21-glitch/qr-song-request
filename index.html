@@ -1,0 +1,116 @@
+<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Song Request</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 16px;
+      background: #101114;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 440px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #1c1d22;
+      padding: 22px;
+      border-radius: 18px;
+      border: 1px solid #34353c;
+    }
+    h1 { margin-top: 0; font-size: 27px; }
+    p { color: #b9bac3; line-height: 1.5; }
+    label {
+      display: block;
+      margin: 18px 0 8px;
+      font-size: 14px;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+    input, textarea {
+      background: #111216;
+      border: 1px solid #444650;
+      color: white;
+    }
+    textarea { resize: vertical; }
+    button {
+      margin-top: 20px;
+      border: 0;
+      background: #b6f36b;
+      color: #171a10;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .note { font-size: 12px; margin-top: 16px; }
+    #result {
+      display: none;
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: #293820;
+      color: #e0ffc6;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <h1>🎵 Request a Song</h1>
+      <p>Minta lagu untuk dibawakan oleh musisi malam ini!</p>
+
+      <form id="requestForm">
+        <label for="nickname">Nama panggilan</label>
+        <input id="nickname" maxlength="40"
+          placeholder="Contoh: Andi" required>
+
+        <label for="song">Judul lagu dan penyanyi</label>
+        <input id="song" maxlength="120"
+          placeholder="Contoh: Separuh Aku - NOAH" required>
+
+        <label for="message">Pesan untuk musisi (opsional)</label>
+        <textarea id="message" maxlength="200" rows="3"
+          placeholder="Semangat, Kak!"></textarea>
+
+        <button type="submit">Kirim Permintaan Lagu</button>
+      </form>
+
+      <div id="result" role="status"></div>
+      <p class="note">
+        Permintaan lagu belum otomatis masuk ke dashboard.
+        Pembayaran QRIS belum diaktifkan pada versi uji coba ini.
+      </p>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById("requestForm").addEventListener(
+      "submit", function(event) {
+        event.preventDefault();
+
+        const nickname = document.getElementById("nickname").value.trim();
+        const song = document.getElementById("song").value.trim();
+        const message = document.getElementById("message").value.trim();
+
+        if (!nickname || !song) return;
+
+        const result = document.getElementById("result");
+        result.textContent =
+          "Terima kasih, " + nickname +
+          "! Permintaan lagu \"" + song +
+          "\" berhasil diuji di halaman ini." +
+          (message ? " Pesanmu: " + message : "") +
+          " Data belum tersimpan ke server.";
+
+        result.style.display = "block";
+      }
+    );
+  </script>
+</body>
+</html>
