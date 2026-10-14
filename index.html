@@ -4,45 +4,98 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Live Song Request</title>
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      margin: 0; padding: 24px 16px;
-      background: #101114; color: white;
+      margin: 0;
+      padding: 24px 16px;
+      background: #101114;
+      color: white;
       font-family: Arial, sans-serif;
     }
-    .container { max-width: 440px; margin: auto; }
-    .card {
-      background: #1c1d22; padding: 22px;
-      border-radius: 18px; border: 1px solid #34353c;
+
+    .container {
+      max-width: 440px;
+      margin: auto;
     }
-    h1 { font-size: 27px; }
-    p { color: #b9bac3; line-height: 1.5; }
-    label { display: block; margin: 18px 0 8px; }
+
+    .card {
+      background: #1c1d22;
+      padding: 22px;
+      border-radius: 18px;
+      border: 1px solid #34353c;
+    }
+
+    h1 {
+      font-size: 27px;
+    }
+
+    p {
+      color: #b9bac3;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin: 18px 0 8px;
+    }
+
     input, textarea, button {
-      width: 100%; padding: 13px; border-radius: 10px;
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
       font-size: 16px;
     }
+
     input, textarea {
-      background: #111216; border: 1px solid #444650;
+      background: #111216;
+      border: 1px solid #444650;
       color: white;
     }
+
     button {
-      margin-top: 20px; border: 0;
-      background: #b6f36b; color: #171a10;
-      font-weight: bold; cursor: pointer;
+      margin-top: 20px;
+      border: 0;
+      background: #b6f36b;
+      color: #171a10;
+      font-weight: bold;
+      cursor: pointer;
     }
-    button:disabled { opacity: .6; cursor: wait; }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
     #result {
-      display: none; margin-top: 16px; padding: 14px;
-      border-radius: 10px; line-height: 1.5;
+      display: none;
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      line-height: 1.5;
       overflow-wrap: anywhere;
     }
-    .success { background: #293820; color: #e0ffc6; }
-    .error { background: #482727; color: #ffdada; }
-    .note { font-size: 12px; }
+
+    .success {
+      background: #293820;
+      color: #e0ffc6;
+    }
+
+    .error {
+      background: #482727;
+      color: #ffdada;
+    }
+
+    .note {
+      font-size: 12px;
+    }
   </style>
 </head>
+
 <body>
   <main class="container">
     <div class="card">
@@ -51,16 +104,28 @@
 
       <form id="requestForm">
         <label for="nickname">Nama panggilan</label>
-        <input id="nickname" maxlength="40"
-          placeholder="Contoh: Andi" required>
+        <input
+          id="nickname"
+          maxlength="40"
+          placeholder="Contoh: Andi"
+          required
+        >
 
         <label for="song">Judul lagu dan penyanyi</label>
-        <input id="song" maxlength="120"
-          placeholder="Contoh: Separuh Aku - NOAH" required>
+        <input
+          id="song"
+          maxlength="120"
+          placeholder="Contoh: Separuh Aku - NOAH"
+          required
+        >
 
         <label for="message">Pesan untuk musisi (opsional)</label>
-        <textarea id="message" maxlength="200" rows="3"
-          placeholder="Semangat, Kak!"></textarea>
+        <textarea
+          id="message"
+          maxlength="200"
+          rows="3"
+          placeholder="Semangat, Kak!"
+        ></textarea>
 
         <button id="submitBtn" type="submit">
           Kirim Permintaan Lagu
@@ -68,63 +133,108 @@
       </form>
 
       <div id="result" role="status" aria-live="polite"></div>
+
       <p class="note">
         Versi uji coba. Pembayaran QRIS belum diaktifkan.
       </p>
     </div>
   </main>
 
+  <!-- Memuat library Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://zhxtujudocgrkjcgzixu.supabase.co/rest/v1/";
-    const SUPABASE_KEY = "sb_publishable_qYaYXBAvjoA8bwJ92HOQTg_GJaw1EUZ";
 
-    const client = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+  <script>
+    // GANTI DUA NILAI DI BAWAH INI DENGAN DATA SUPABASE MILIKMU
+    const SUPABASE_URL = "MASUKKAN_PROJECT_URL_DI_SINI";
+    const SUPABASE_KEY = "MASUKKAN_PUBLISHABLE_KEY_DI_SINI";
 
     const form = document.getElementById("requestForm");
     const button = document.getElementById("submitBtn");
     const result = document.getElementById("result");
 
+    function showResult(message, type) {
+      result.className = type;
+      result.textContent = message;
+      result.style.display = "block";
+    }
+
     form.addEventListener("submit", async function(event) {
       event.preventDefault();
 
-      const nickname = document.getElementById("nickname").value.trim();
-      const song = document.getElementById("song").value.trim();
-      const message = document.getElementById("message").value.trim();
+      const nickname =
+        document.getElementById("nickname").value.trim();
 
-      if (!nickname || !song) return;
+      const song =
+        document.getElementById("song").value.trim();
+
+      const message =
+        document.getElementById("message").value.trim();
+
+      if (!nickname || !song) {
+        showResult("Nama dan judul lagu wajib diisi.", "error");
+        return;
+      }
+
+      if (
+        SUPABASE_URL === "https://zhxtujudocgrkjcgzixu.supabase.co/rest/v1/" ||
+        SUPABASE_KEY === "sb_publishable_qYaYXBAvjoA8bwJ92HOQTg_GJaw1EUZ"
+      ) {
+        showResult(
+          "Pengaturan Supabase belum diisi. Periksa kode website.",
+          "error"
+        );
+        return;
+      }
+
+      if (!window.supabase) {
+        showResult(
+          "Library Supabase gagal dimuat. Periksa koneksi internet.",
+          "error"
+        );
+        return;
+      }
 
       button.disabled = true;
       button.textContent = "Mengirim...";
       result.style.display = "none";
 
       try {
+        const client = window.supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_KEY
+        );
+
         const { error } = await client
           .from("song_requests")
-          .insert({
+          .insert([{
             nickname: nickname,
             song_title: song,
             message: message
-          });
+          }]);
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
-        result.className = "success";
-        result.textContent =
-          "Terima kasih, " + nickname +
-          "! Permintaan lagu berhasil disimpan.";
-        result.style.display = "block";
+        showResult(
+          "Berhasil! Permintaan lagu kamu sudah tersimpan. Terima kasih, " +
+          nickname + "!",
+          "success"
+        );
+
         form.reset();
+
       } catch (error) {
-        console.error("Gagal menyimpan permintaan:", error);
-        result.className = "error";
-        result.textContent =
-          "Permintaan belum berhasil disimpan. " +
-          "Periksa koneksi atau pengaturan database, lalu coba lagi.";
-        result.style.display = "block";
+        console.error("Supabase error:", error);
+
+        showResult(
+          "Gagal menyimpan permintaan lagu. " +
+          "Periksa Project URL, Publishable key, koneksi, " +
+          "dan izin INSERT tabel Supabase. Detail: " +
+          (error.message || "Kesalahan tidak diketahui."),
+          "error"
+        );
+
       } finally {
         button.disabled = false;
         button.textContent = "Kirim Permintaan Lagu";
